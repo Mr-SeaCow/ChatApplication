@@ -1,11 +1,59 @@
-var WebSocketServer = require('websocket').server;
-var http = require('http');
+const WebSocketServer = require('websocket').server;
+const http = require('http');
+const ejs = require('ejs');
+const RequestHandler = require('./src/requestHandler');
 
-var server = http.createServer(function (request, response) {
+let requestHandler = new RequestHandler('http://localhost:8080');
+
+const server = http.createServer(function (request, response) {
+    const { method, url, headers } = request;
+    let body = [];
+    request.on('data', (chunk) => {
+        body.push(chunk);
+    }).on('end', () => {
+        body = Buffer.concat(body).toString();
+        switch (method){
+            case 'POST': {
+                requestHandler.emit(`POST:${url}`, request, response, body)
+                break;
+            }
+            case 'GET': {
+                requestHandler.emit(`GET:${url}`, request, response, body)
+                break;
+            }
+        }
+    });
     console.log((new Date()) + ' Received request for ' + request.url);
-    response.writeHead(404);
-    response.end();
+
 });
+
+requestHandler.post('/Test', (req, res, params)=> {
+    const { method, url, header } = req;
+    console.log(params)
+
+    //console.log(req)
+    requestHandler.redirect('/Test', req, res)
+
+})
+requestHandler.get('/', (req, res)=> {
+    const { method, url, header } = req;
+    //console.log(method, url, header)
+    res.writeHead(200);
+    ejs.renderFile('./views/index.ejs', { name: 'Matthew' }, (err, str) => {
+        if (err) throw err;
+        res.write(str)
+    });
+    res.end();
+})
+requestHandler.get('/Test', (req, res)=> {
+    const { method, url, header } = req;
+    //console.log(method, url, header)
+    res.writeHead(200);
+    res.write('test')
+    res.end();
+})
+
+
 server.listen(8080, function () {
     console.log((new Date()) + ' Server is listening on port 8080');
 });
@@ -58,7 +106,7 @@ wsServer.on('request', function (request) {
                             'time': Date.now()
                         }
                     }))
-                   // curConnections[data.target].sendUTF(`${connection.username} just said ${data.message}`)
+                    // curConnections[data.target].sendUTF(`${connection.username} just said ${data.message}`)
                     break;
                 }
             }

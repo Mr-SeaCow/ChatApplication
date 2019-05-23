@@ -9,6 +9,7 @@
   "author": "Matthew Van Vleet",
   "license": "ISC",
   "dependencies": {
+    "ejs": "^2.6.1",
     "express": "^4.17.0",
     "websocket": "^1.0.28"
   }

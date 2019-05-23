@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<header>
+
+</header>
+<body>
+    <div name="chatBox" style="width: 150px; height: 300px; border: 1px solid black;">
+        <div name="userName" style="text-align:center; border-bottom: 1px solid black;"><h2 style="margin: 10px;"><%=name%></h2></div>
+        <form action="/Test" method="post">
+            <div>
+                <label for="say">What greeting do you want to say?</label>
+                <input name="say" id="say" value="Hi">
+              </div>
+              <div>
+                <label for="to">Who do you want to say it to?</label>
+                <input name="to" id="to" value="Mom">
+              </div>
+              <div>
+                <button>Send my greetings</button>
+              </div>
+        </form>
+    </div>
+</body>
+
+
+
+</html>
