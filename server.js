@@ -2,8 +2,14 @@ const WebSocketServer = require('websocket').server;
 const http = require('http');
 const ejs = require('ejs');
 const RequestHandler = require('./src/requestHandler');
+const port = process.env.port || 8080
 
-let requestHandler = new RequestHandler('http://localhost:8080');
+function middleware(req) {
+    if (req.url === '/Test') return true; //EXAMPLE MIDDLEWARE
+    return false;
+}
+
+let handler = new RequestHandler(`http://localhost:${port}`);
 
 const server = http.createServer(function (request, response) {
     const { method, url, headers } = request;
@@ -12,13 +18,13 @@ const server = http.createServer(function (request, response) {
         body.push(chunk);
     }).on('end', () => {
         body = Buffer.concat(body).toString();
-        switch (method){
+        switch (method) {
             case 'POST': {
-                requestHandler.emit(`POST:${url}`, request, response, body)
+                handler.emit(`POST:${url}`, request, response, body)
                 break;
             }
             case 'GET': {
-                requestHandler.emit(`GET:${url}`, request, response, body)
+                handler.emit(`GET:${url}`, request, response, body)
                 break;
             }
         }
@@ -27,17 +33,13 @@ const server = http.createServer(function (request, response) {
 
 });
 
-requestHandler.post('/Test', (req, res, params)=> {
+handler.post('/Test', (req, res, params) => {
     const { method, url, header } = req;
-    console.log(params)
-
-    //console.log(req)
-    requestHandler.redirect('/Test', req, res)
-
+    handler.redirect('/Test', req, res, params)
 })
-requestHandler.get('/', (req, res)=> {
-    const { method, url, header } = req;
-    //console.log(method, url, header)
+
+handler.get('/', (req, res) => {
+    const { method, url, headers } = req;
     res.writeHead(200);
     ejs.renderFile('./views/index.ejs', { name: 'Matthew' }, (err, str) => {
         if (err) throw err;
@@ -45,18 +47,20 @@ requestHandler.get('/', (req, res)=> {
     });
     res.end();
 })
-requestHandler.get('/Test', (req, res)=> {
-    const { method, url, header } = req;
-    //console.log(method, url, header)
+
+handler.get('/Test', middleware, (req, res, _, mid) => {
+    const { method, url, headers } = req;
+    //handler.parseCookies(req)
     res.writeHead(200);
     res.write('test')
     res.end();
 })
 
 
-server.listen(8080, function () {
+server.listen(port, function () {
     console.log((new Date()) + ' Server is listening on port 8080');
 });
+
 
 wsServer = new WebSocketServer({
     httpServer: server,
@@ -120,3 +124,4 @@ wsServer.on('request', function (request) {
         console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
     });
 });
+
