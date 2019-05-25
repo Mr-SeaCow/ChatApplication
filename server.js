@@ -1,15 +1,18 @@
 const WebSocketServer = require('websocket').server;
 const http = require('http');
-const ejs = require('ejs');
+const EJS = require('ejs');
 const RequestHandler = require('./src/requestHandler');
 const port = process.env.port || 8080
+
 
 function middleware(req) {
     if (req.url === '/Test') return true; //EXAMPLE MIDDLEWARE
     return false;
 }
 
+
 let handler = new RequestHandler(`http://localhost:${port}`);
+
 
 const server = http.createServer(function (request, response) {
     const { method, url, headers } = request;
@@ -33,20 +36,23 @@ const server = http.createServer(function (request, response) {
 
 });
 
+
 handler.post('/Test', (req, res, params) => {
     const { method, url, header } = req;
     handler.redirect('/Test', req, res, params)
 })
 
+
 handler.get('/', (req, res) => {
     const { method, url, headers } = req;
     res.writeHead(200);
-    ejs.renderFile('./views/index.ejs', { name: 'Matthew' }, (err, str) => {
+    EJS.renderFile('./views/index.ejs', { name: 'Matthew' }, (err, str) => {
         if (err) throw err;
         res.write(str)
     });
     res.end();
 })
+
 
 handler.get('/Test', middleware, (req, res, _, mid) => {
     const { method, url, headers } = req;
@@ -72,12 +78,15 @@ wsServer = new WebSocketServer({
     autoAcceptConnections: false
 });
 
+
 function originIsAllowed(origin) {
     // put logic here to detect whether the specified origin is allowed.
     return true;
 }
 
+
 let curConnections = {};
+
 
 wsServer.on('request', function (request) {
     if (!originIsAllowed(request.origin)) {
@@ -110,7 +119,6 @@ wsServer.on('request', function (request) {
                             'time': Date.now()
                         }
                     }))
-                    // curConnections[data.target].sendUTF(`${connection.username} just said ${data.message}`)
                     break;
                 }
             }
